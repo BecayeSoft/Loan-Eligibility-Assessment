@@ -1,5 +1,6 @@
 ipykernel
 pandas
+tabulate
 numpy
 seaborn
 matplotlib
