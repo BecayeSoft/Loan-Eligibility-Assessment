@@ -1,5 +1,3 @@
-# EDA
-import pandas as pd
 import numpy as np
 
 # Preprocessing
@@ -39,7 +37,11 @@ def create_preprocessing_pipeline(num_features, cat_features):
     # Preprocessing for categorical data
     categoric_pipe = Pipeline([
         ( 'imputer', SimpleImputer(strategy='most_frequent') ),
-        ( 'onehot', OneHotEncoder(drop='if_binary', sparse_output=False, handle_unknown='ignore') )
+        ( 'onehot', OneHotEncoder(
+            drop='if_binary',
+            sparse_output=False, 
+            handle_unknown='ignore',
+        ) )
     ])
 
     # Combining the preprocessing pipelines

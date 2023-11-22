@@ -7,3 +7,5 @@ scikit-learn
 xgboost
 optuna
 shap
+openai
+python-dotenv
