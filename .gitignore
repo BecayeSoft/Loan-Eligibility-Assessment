@@ -1,2 +1,8 @@
 .env
 __pycache__
+credentials.env
+*.env
+
+# Git command to stop tracknig credentials.env and remove it from the repo
+git rm --cached credentials.env
+```
