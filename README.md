@@ -1,6 +1,11 @@
 
 # A trust-worthy model for loan eligibility prediction
 
+⚠️ This project is still a work in progress. ⚠️
+
+**TODO**
+- [ ] Built a streamlit app or web app to interact with the model
+
 In this project, I built a machine learning model to assess if an applicant is eligible for a loan or not, then I used GPT-3.5 to generate a report explaining in details the model's decision to a loan's officer. 
 
 <!-- 
