@@ -1,20 +1,20 @@
 
 # A trust-worthy model for loan eligibility prediction
 
+In this project, I built a machine learning model to assess if an applicant is eligible for a loan or not, then I used GPT-3.5 to generate a report explaining in details the model's decision to a loan's officer. 
+
+> TL;DR: You can find the generated report for a example of loan application in the [reports](reports) folder.
+
 ⚠️ This project is still a work in progress. ⚠️
 
 **TODO**
-- [ ] Built a streamlit app or web app to interact with the model
-
-In this project, I built a machine learning model to assess if an applicant is eligible for a loan or not, then I used GPT-3.5 to generate a report explaining in details the model's decision to a loan's officer. 
+- [ ] Build a streamlit app or web app to interact with the model
 
 <!-- 
 In this project, I built a Machine Learning model to predict loan eligibility. Since I was working on a problem that involves humans, there were ethical concerns. I needed to make sure that my model was trust-worthy, unbiased and was not discriminating against any group of people. 
 Therefore, explanability was at the core of this project. I made sure to explain the model's logic and its predictions using SHAP values. -->
 
 Let me take you through the steps of this project.
-
-> TL;DR: You can find the generated report for a example of loan application in the [reports](reports) folder.
 
 ## Situation
 
