@@ -10,3 +10,4 @@ optuna
 shap
 openai
 python-dotenv
+streamlit

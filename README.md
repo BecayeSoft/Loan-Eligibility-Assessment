@@ -56,19 +56,13 @@ Now how do we implement this?
 
 ### Condition-based eligibility
 
-Based on the data, I came up with the following conditions.
+Based on the data, I came up with the following conditions to reject a loan application:
 
-**Non-eligible applicants**:
+- If the applicant does not have a credit history, then the loan is rejected.
+- If their total income is less than 2500, then the loan is rejected.
+- If the loan amount to income ratio is greater than 0.5, then the loan is rejected.
 
-- Credit history: if the applicant does not have a credit history, they are not eligible
-- Income: if the sum of the total income of the applicant and co-applicant is less than 3,000, they are not eligible
-
-**Eligible applicants**:
-
-To be eligible, the applicant must have:
-- Credit history: if the applicant must have a credit history
-- Income: if the sum of the total income of the applicant and co-applicant is greater than 3,000 and the have less than 3 dependents
-    - Otherwise, the sum of applicant's income and co-applicant's income must be greater than 4,000
+If none of these conditions are met, then the loan is approved.
 
 ### Machine Learning
 
@@ -80,16 +74,64 @@ To solve this problem using machine learning, I followed these steps:
 
 ## Results
 
-<!-- I first used a condition-based approach before even thinking about machine learning.
-I got the following results:
-- Accuracy: 0.81
-- F1 score: 0.88
-- Precision: 0.88
-- Recall: 0.88
+### Condition-based eligibility
 
-Obviously, I needed to use machine learning.  -->
+The condition-based approach yielded the following results:
 
+```
+          precision    recall  f1-score   support
+
+    0          0.62      0.49      0.55       148
+    1          0.79      0.87      0.83       332
+
+   accuracy                        0.81       480
+   macro avg   0.71     0.68       0.69       480
+weighted avg   0.74     0.75       0.74       480
+```
+
+![Confusion matrix](reports/multiple-condition-cm.png)
+
+Interestingly, using only one condition (credit history), we get higher scores:
+
+```
+          precision    recall  f1-score   support
+
+    0          0.90      0.43      0.58       148
+    1          0.79      0.98      0.88       332
+
+   accuracy                        0.81       480
+   macro avg   0.85      0.70      0.73       480
+weighted avg   0.83      0.81      0.78       480
+```
+
+![Confusion matrix](reports/single-condition-cm.png)
+
+
+### Machine Learning
+
+Surprisingly, the machine learning model achieved lower f1-score than the simple condition-based approach.
+
+Machine learning yielded the following results:
+
+```
+              precision    recall  f1-score   support
+
+    Rejected       0.40      0.90      0.56        73
+    Approved       0.98      0.78      0.87       448
+
+    accuracy                           0.80       521
+   macro avg       0.69      0.84      0.72       521
+weighted avg       0.90      0.80      0.83       521
+```
+
+![Confusion matrix](reports/ml-model-cm.png)
+
+## Conclusion
+
+While the single condition-based approach achieved almost equal f1-score as the machine learning model, we cannot rely on a person's credit history alone to determine if they are eligible for a loan or not. 
+
+On the other hand, the machine learning model is able to capture more complex relationships between the features and the target variable but also generates explanations for its predictions.
 
 ## References
 
-- Dataset:
+- Dataset: https://www.kaggle.com/datasets/devzohaib/eligibility-prediction-for-loan
