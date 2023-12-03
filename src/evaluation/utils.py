@@ -155,8 +155,8 @@ def plot_confusion_matrix(
     fig, axs = plt.subplots(1, n_cols, figsize=figsize)
 
     # Confusion Matrix 1
-    ConfusionMatrixDisplay.from_estimator(model, X1, y1, ax=axs[0], cmap=CM_CMAP)
-    axs[0].set_title(title1)
+    ConfusionMatrixDisplay.from_estimator(model, X1, y1, ax=axs, cmap=CM_CMAP)
+    axs.set_title(title1)
 
     # If a second set is provided, plot the confusion matrix of the second set
     if X2 is not None and y2 is not None:
