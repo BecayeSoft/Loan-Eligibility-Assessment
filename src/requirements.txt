@@ -1,0 +1,13 @@
+ipykernel
+pandas
+tabulate
+numpy
+seaborn
+matplotlib
+scikit-learn
+xgboost
+optuna
+shap
+openai
+python-dotenv
+streamlit

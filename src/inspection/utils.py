@@ -39,8 +39,6 @@ def plot_validation_curves(
     scoring="roc_auc",
     title="Validation Curve",
     figsize=(9, 8),
-    save=False,
-    save_as=None,
 ):
     """
     Plots the validation curves of the model.

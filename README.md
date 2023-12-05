@@ -1,18 +1,16 @@
 
-# A trust-worthy model for loan eligibility prediction
+# A trust-worthy model for loan eligibility assessment
 
 In this project, I built a machine learning model to assess if an applicant is eligible for a loan or not, then I used GPT-3.5 to generate a report explaining in details the model's decision to a loan's officer. 
 
-> TL;DR: You can find the generated report for a example of loan application in the [reports](reports) folder.
+> TL;DR: You can find an example of generated report for a loan application in the [reports](reports) folder.
 
-⚠️ This project is still a work in progress. ⚠️
+## GUI
 
-**TODO**
-- [ ] Build a streamlit app or web app to interact with the model
+The GUI was built using [Streamlit](https://streamlit.io/).
 
-<!-- 
-In this project, I built a Machine Learning model to predict loan eligibility. Since I was working on a problem that involves humans, there were ethical concerns. I needed to make sure that my model was trust-worthy, unbiased and was not discriminating against any group of people. 
-Therefore, explanability was at the core of this project. I made sure to explain the model's logic and its predictions using SHAP values. -->
+![Alt text](imgs/gui.png)
+
 
 Let me take you through the steps of this project.
 
@@ -26,111 +24,73 @@ However, since we are dealing with humans, a few questions arise:
 
 Therefore, model's interpretability is at the core of this project.
 
-## Analysis
+## Analysis 
 
-Do we even need machine learning?
-
-### Machine Learning vs. Condition-based Eligibility
-
-#### Condition-based eligibility
-
-Why not use an if/else solution to determine if the customer is eligible or not. For example, if they do not have a credit history, they are not eligible.
-
-**Pros and cons**:
-
-&nbsp;&nbsp;&nbsp;&nbsp; ✅ Easy to implement \
-&nbsp;&nbsp;&nbsp;&nbsp; ❌ Not very accurate since it does not capture the relationship between the features and the target variable
-
-#### Machine Learning
-
-ML algorithms are more powerful than condition-based eligibility as they can capture complex relationships.
+ML algorithms are powerful as they can capture complex relationships in the data.
 
 **Pros and cons**
 
-&nbsp;&nbsp;&nbsp;&nbsp; ✅ Smarter, more accurate, captures complex relationships \
-&nbsp;&nbsp;&nbsp;&nbsp; ❌ Complex, harder to implement, explainability is not straightforward
+&nbsp;&nbsp;&nbsp;&nbsp; ✅ Smarter, more accurate, capture complex relationships \
+&nbsp;&nbsp;&nbsp;&nbsp; ❌ More complex, harder to implement, explainability is not straightforward
 
 ## Action
 
-Now how do we implement this?
+Now how do we proceed?
 
-### Condition-based eligibility
+To solve this problem using machine learning, we can follow these steps:
 
-Based on the data, I came up with the following conditions to reject a loan application:
-
-- If the applicant does not have a credit history, then the loan is rejected.
-- If their total income is less than 2500, then the loan is rejected.
-- If the loan amount to income ratio is greater than 0.5, then the loan is rejected.
-
-If none of these conditions are met, then the loan is approved.
-
-### Machine Learning
-
-To solve this problem using machine learning, I followed these steps:
-
-- Automated model selection: we will use the [multivariate TPE](https://tech.preferred.jp/en/blog/multivariate-tpe-makes-optuna-even-more-powerful/) to find the combination of model and hyperparameters. [Optuna](https://optuna.org/) is a great library for this.
-- Interpretability: we will use [SHAP](https://shap.readthedocs.io/en/latest/) to explain the model's predictions.
-- Report generation: we will use [GPT-3.5](https://platform.openai.com/docs/models) to generate a report explaining the model's decision.
+- Data preparation: we will use [Pandas](https://pandas.pydata.org/) for this.
+- Automated model selection: we will use the [multivariate TPE](https://tech.preferred.jp/en/blog/multivariate-tpe-makes-optuna-even-more-powerful/) to select and optmize the best model in the most efficient way. [Optuna](https://optuna.org/) is a great library for this.
+- Interpretability: we will use SHAP Values as they provide an intuitive way to explain the model's logic. The [shap](https://shap.readthedocs.io/en/latest/) library provides a great implementation of this.
+- Reporting: we will use [GPT-3.5](https://platform.openai.com/docs/models) to generate a report explaining the model's decision.
 
 ## Results
 
-### Condition-based eligibility
+It turns out a simple logistic regression model achieved the best performance with no hyperparameters tuning.
 
-The condition-based approach yielded the following results:
+### Classification report
 
-```
-          precision    recall  f1-score   support
+While the model achieved an accuracy of 80%, it rejected some applications that should have been approved, which explains its low precision on the "Rejected" class and lower recall on the "Approved" class.
 
-    0          0.62      0.49      0.55       148
-    1          0.79      0.87      0.83       332
-
-   accuracy                        0.81       480
-   macro avg   0.71     0.68       0.69       480
-weighted avg   0.74     0.75       0.74       480
-```
-
-![Confusion matrix](reports/multiple-condition-cm.png)
-
-Interestingly, using only one condition (credit history), we get higher scores:
-
-```
-          precision    recall  f1-score   support
-
-    0          0.90      0.43      0.58       148
-    1          0.79      0.98      0.88       332
-
-   accuracy                        0.81       480
-   macro avg   0.85      0.70      0.73       480
-weighted avg   0.83      0.81      0.78       480
-```
-
-![Confusion matrix](reports/single-condition-cm.png)
-
-
-### Machine Learning
-
-Surprisingly, the machine learning model achieved lower f1-score than the simple condition-based approach.
-
-Machine learning yielded the following results:
 
 ```
               precision    recall  f1-score   support
 
-    Rejected       0.40      0.90      0.56        73
-    Approved       0.98      0.78      0.87       448
+    Rejected       0.72      0.70      0.71        30
+    Approved       0.86      0.87      0.87        63
 
-    accuracy                           0.80       521
-   macro avg       0.69      0.84      0.72       521
-weighted avg       0.90      0.80      0.83       521
+    accuracy                           0.82        93
+   macro avg       0.79      0.79      0.79        93
+weighted avg       0.82      0.82      0.82        93
 ```
 
-![Confusion matrix](reports/ml-model-cm.png)
+### Model performance
 
-## Conclusion
+These graphs look good, except for the calibration curve which shows that the model is not well calibrated for probabilities between 0.2 and 0.5.
 
-While the single condition-based approach achieved almost equal f1-score as the machine learning model, we cannot rely on a person's credit history alone to determine if they are eligible for a loan or not. 
+![Model Performance](reports/plots/model-performance.png)
 
-On the other hand, the machine learning model is able to capture more complex relationships between the features and the target variable but also generates explanations for its predictions.
+
+## Potential improvements
+
+### Adding more data
+
+The learning curve shows that the accuracy of the model decreases as we add more training data, whereas the accuracy of the validation is low at the beginning and increases as we add more training data. This indicates that adding more data improves the generalization capability of the model and therefore, more quality data could potentially improve the model.
+
+![Learning Curve](reports/plots/learning-curve.png)
+
+### Feature engineering
+
+Some experiments were conducted by creating new features from the existing ones:
+- Monthly Payment: Monthly payment for the loan
+- Total Income: The sum of applicant and co-applicant income
+- Amount Income Ratio: The ratio between the monthly payment and the total income
+- Amount Income Ratio Percent: The ratio between the monthly payment and the total income, mapped between 0 and 1.
+
+However, these features did not have any impact on the model's performance.
+
+Feature engineering could be investigated further to improve the model's performance.
+
 
 ## References
 
