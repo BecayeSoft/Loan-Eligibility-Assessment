@@ -101,6 +101,17 @@ def main():
     # # Display prediction
     # st.write("### Decision")
 
+    # Generate report
+    X_test = load_test_data()
+
+  
+    # Display a loading message while waiting for the response
+    with st.spinner("Please take a coffee and chill while we process your application..."):
+
+        # Generate the report and explanation
+        report, shap_explanation = generate_report(X_test, user_input=input_df)
+
+    # Display the prediction
     if prediction == 1:
         st.write("Congratulations 🎉")
         st.write("Your loan application has been approved! Find more details below.")
@@ -108,10 +119,6 @@ def main():
         st.write("Your loan will need further investigation before it can be approved 🙂")
         st.write("Please find more details below or contact us for more information.")
 
-
-    # Generate report
-    X_test = load_test_data()
-    report, shap_explanation = generate_report(X_test, user_input=input_df)
     st.write(report)
 
     # Display the waterfall plot
@@ -121,6 +128,9 @@ def main():
     fig = plt.figure()
     shap.plots.waterfall(shap_explanation[0], show=False)
     st.pyplot(fig)
+    
+    # Display the final text and format it as a quote
+    st.write("> **Please, feel free to contact one of our agents for more information.** 🙂")
 
 
 if __name__ == '__main__':

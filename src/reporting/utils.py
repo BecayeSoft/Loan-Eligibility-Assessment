@@ -128,10 +128,6 @@ def generate_report(X_test, user_input):
     # Convert the JSON object to a DataFrame
     explanation_df = explanation_to_dataframe(explanation_jsons)
 
-    print(explanation_df)
-
-    # print(explanation_df) TODO
-
     # Generate the report
     # The report consists of the dataframe as a Markdown table
     # and the response from GPT-3
