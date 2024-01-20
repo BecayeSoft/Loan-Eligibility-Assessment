@@ -3,7 +3,9 @@
 
 In this project, I built a machine learning model to assess if an applicant is eligible for a loan or not, then I used GPT-3.5 to generate a report explaining in details the model's decision to a loan's officer. 
 
-> TL;DR: You can find an example of generated report for a loan application in the [reports](reports) folder.
+## TL;DR
+- Test the app at: https://loan-eligibility.streamlit.app/.
+- Find an example of generated report for a loan application in the [reports](reports) folder.
 
 ## GUI
 
