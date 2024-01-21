@@ -5,60 +5,46 @@
 
 |    | Name                    |     Value |   Impact Score | Effect on Approval   |
 |---:|:------------------------|----------:|---------------:|:---------------------|
-| 12 | Credit_History_1.0      |  1        |     0.548731   | Positive             |
-|  2 | CoapplicantIncome       | -1.10284  |    -0.249998   | Negative             |
-|  6 | Married_Yes             |  1        |     0.160357   | Positive             |
-|  7 | Education_Not Graduate  |  0        |     0.119659   | Positive             |
-| 10 | Property_Area_Semiurban |  0        |    -0.117327   | Negative             |
-|  1 | ApplicantIncome         |  0.510576 |     0.108182   | Positive             |
-|  9 | Property_Area_Rural     |  0        |     0.105457   | Positive             |
-| 11 | Property_Area_Urban     |  1        |    -0.0704887  | Negative             |
-|  5 | Gender_Male             |  1        |    -0.0418783  | Negative             |
-|  0 | Dependents              | -0.827104 |    -0.0354772  | Negative             |
-|  3 | LoanAmount              | -0.325043 |     0.0261372  | Positive             |
-|  8 | Self_Employed_Yes       |  0        |     0.0217467  | Positive             |
-|  4 | Loan_Amount_Term        |  0.17554  |    -0.00698235 | Negative             |
+| 12 | Credit_History_1.0      |  1        |      0.534333  | Positive             |
+|  2 | CoapplicantIncome       | -1.10284  |     -0.237314  | Negative             |
+|  6 | Married_Yes             |  1        |      0.181702  | Positive             |
+|  7 | Education_Not Graduate  |  0        |      0.119013  | Positive             |
+| 10 | Property_Area_Semiurban |  0        |     -0.113641  | Negative             |
+|  9 | Property_Area_Rural     |  0        |      0.106275  | Positive             |
+|  1 | ApplicantIncome         |  0.510576 |      0.0998845 | Positive             |
+| 11 | Property_Area_Urban     |  1        |     -0.0612738 | Negative             |
+|  5 | Gender_Male             |  1        |     -0.0386152 | Negative             |
+|  3 | LoanAmount              | -0.325043 |      0.032121  | Positive             |
+|  0 | Dependents              | -0.827104 |     -0.0226349 | Negative             |
+|  8 | Self_Employed_Yes       |  0        |      0.020177  | Positive             |
+|  4 | Loan_Amount_Term        |  0.17554  |     -0.0053518 | Negative             |
 
 ## Model Decision
 
-Based on the machine learning model's predictions, it has determined that the loan application is eligible for approval with a probability of 77%.
+Based on the model's predictions, the loan applicant has been predicted to be eligible for a loan with a probability of 62%. Let's analyze the factors that contributed to this prediction.
 
-Now let's analyze the impact of each feature on the model's decision:
+1. Dependents: The number of dependents the applicant has is a negative factor when it comes to loan approval. In this case, the applicant has -0.8 dependents, which reduced the probability of approval slightly.
 
-1. Dependents: The number of dependents that the applicant has. A negative SHAP value (-0.04) indicates that having more dependents has a slightly negative effect on the approval decision.
+2. ApplicantIncome: The applicant's income is a positive factor for loan approval. In this case, the applicant has a relatively higher income, positively impacting the probability of approval.
 
-2. ApplicantIncome: The income of the applicant. A positive SHAP value (0.11) indicates that higher income has a positive impact on the approval decision.
+3. CoapplicantIncome: The co-applicant's income is also a factor for loan approval. However, in this case, the co-applicant's income has a negative impact on the probability of approval, as it is relatively low.
 
-3. CoapplicantIncome: The income of the co-applicant. A negative SHAP value (-0.25) suggests that a higher co-applicant income has a negative effect on the approval decision.
+4. LoanAmount: The requested loan amount also affects the approval decision. In this case, a lower loan amount positively impacts the probability of approval.
 
-4. LoanAmount: The amount of the loan requested. A positive SHAP value (0.03) suggests that a larger loan amount has a slightly positive impact on the approval decision.
+5. Loan_Amount_Term: The term of the loan also plays a role in the approval decision. In this case, a longer loan term has a negative effect on the probability of approval.
 
-5. Loan_Amount_Term: The term of the loan in months. A negative SHAP value (-0.007) suggests that a longer loan term has a slightly negative effect on the approval decision.
+6. Gender_Male: Being male is also a negative factor for loan approval in this model. In this case, the applicant is male, which negatively impacts the probability of approval.
 
-6. Gender_Male: Indicates whether the applicant is male. A negative SHAP value (-0.04) suggests that being a male has a slightly negative effect on the approval decision.
+7. Married_Yes: Being married is a positive factor for loan approval. In this case, the applicant is married, which positively affects the probability of approval.
 
-7. Married_Yes: Indicates whether the applicant is married. A positive SHAP value (0.16) indicates that being married has a positive impact on the approval decision.
+8. Education_Not Graduate: Education level is also considered in the model. Not being a graduate has a positive impact on the approval decision. In this case, the applicant is not a graduate, which increases the probability of approval.
 
-8. Education_Not Graduate: Indicates whether the applicant is a graduate. A positive SHAP value (0.12) suggests that being a non-graduate has a positive impact on the approval decision.
+9. Self_Employed_Yes: Being self-employed is also considered a positive factor for loan approval. In this case, the applicant is not self-employed, so it slightly reduces the probability of approval.
 
-9. Self_Employed_Yes: Indicates whether the applicant is self-employed. A positive SHAP value (0.02) suggests that being self-employed has a small positive impact on the approval decision.
+10. Property_Area_Rural, Property_Area_Semiurban, Property_Area_Urban: The property area is also taken into account. In this case, the property is in an urban area, which has a slight negative impact on the probability of approval compared to properties in rural or semi-urban areas.
 
-10. Property_Area_Rural: Indicates whether the property is in a rural area. A positive SHAP value (0.11) suggests that having a rural property has a positive impact on the approval decision.
+11. Credit_History_1.0: Having a credit history is a significant positive factor for loan approval. In this case, the applicant has a credit history, which greatly increases the probability of approval.
 
-11. Property_Area_Semiurban: Indicates whether the property is in a semi-urban area. A negative SHAP value (-0.12) suggests that having a semi-urban property has a slightly negative effect on the approval decision.
+The decision-making process of the model involves considering all these factors and assigning them a weight (SHAP value) based on their importance. Features with positive SHAP values increase the probability of approval, while features with negative SHAP values decrease the probability of approval. The magnitude of the SHAP value indicates the strength of the feature's impact on the decision.
 
-12. Property_Area_Urban: Indicates whether the property is in an urban area. A negative SHAP value (-0.07) suggests that having an urban property has a slightly negative effect on the approval decision.
-
-13. Credit_History_1.0: Indicates whether the applicant has a credit history. A positive SHAP value (0.55) suggests that having a credit history has a strong positive impact on the approval decision.
-
-From the analysis of the SHAP values, it is observed that the most influential features on the model's decision are:
-- Credit_History_1.0: Having a credit history is the most influential feature in determining the approval decision. It strongly contributes to an increased probability of approval.
-- ApplicantIncome: Higher income positively impacts the approval decision.
-- Married_Yes: Being married also has a positive impact on the approval decision.
-
-On the other hand, the following features slightly reduce the probability of approval:
-- CoapplicantIncome: Higher co-applicant income negatively affects the approval decision.
-- Loan_Amount_Term: Longer loan terms have a slight negative impact on the approval decision.
-- Property_Area_Semiurban: Having a property in a semi-urban area slightly reduces the probability of approval.
-
-It is important to note that these SHAP values indicate the relative importance and effect of each feature on the model's decision. Each feature contributes differently to the final decision, and the model takes into account various factors to make its prediction.
+Overall, in this particular case, the applicant's income, credit history, marital status, education level, and the loan amount are the most impactful factors for loan approval.

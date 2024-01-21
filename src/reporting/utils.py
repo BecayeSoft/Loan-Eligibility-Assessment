@@ -29,12 +29,17 @@ global query_template
 
 
 system_prompt = """
-You are the assistant of a loan eligibility officer who doesn't know much about machine learning. 
-A data scientist built a machine learning model to predict whether or not a loan applicant is eligible for a loan.
-You are tasked to explain the model's predictions based on the SHAP (SHapley Additive exPlanations) values of the model's features. 
-Your report should focus more on the features that most impacted the model's decision and how they impacted it.
-Remember, you are explaining the model's decision to a non-technical person.
+The system evaluates loan applications using applicant data. 
+You need to explain the system's decision, considering features and their impacts, and this explanation is tailored for the non-technical applicant. 
+No greetings or closings are necessary. 
+Emphasize the features that had the most influence on the system's decision and how they affected that decision.
+When you mention a feature, include the feature's name and value.
+Use the term "system" to reference the model and avoid technical jargon related to the SHAP values.
 """
+
+# Features removed from the prompt:
+# - Married_Yes: 1 if the applicant is married, 0 otherwise
+# - Education_Not Graduate: 1 if the applicant is not a graduate, 0 otherwise
 
 query_template = """
 Below are the definitions of the features:
@@ -44,8 +49,6 @@ Below are the definitions of the features:
 - LoanAmount: Loan amount in thousands
 - Loan_Amount_Term: Term of the loan in months
 - Gender_Male: 1 if the applicant is a male, 0 otherwise
-- Married_Yes: 1 if the applicant is married, 0 otherwise
-- Education_Not Graduate: 1 if the applicant is not a graduate, 0 otherwise
 - Self_Employed_Yes: 1 if the applicant is self-employed, 0 otherwise
 - Property_Area_Rural: 1 if the property is in a rural area, 0 otherwise
 - Property_Area_Semiurban: 1 if the property is in a semiurban area, 0 otherwise
@@ -167,9 +170,10 @@ def explanation_to_json(shap_explanation):
     explanation_jsons = []
     feature_names = [
         'Dependents', 'Applicant Income', 'Coapplicant Income', 'Loan Amount',
-       'Loan Amount Term', 'Gender', 'Married',
-       'Education', 'Self Employed', 'Property Area: Rural',
-       'Property Area: Semiurban', 'Property Area: Urban', 'Has Credit History'
+        'Loan Amount Term', 'Gender', 
+        # 'Married', 'Education', 
+        'Self Employed', 'Property Area: Rural',
+        'Property Area: Semiurban', 'Property Area: Urban', 'Has Credit History'
     ]
     
     for name, value, shap_value in zip(feature_names, shap_explanation.data.iloc[0].values, shap_explanation.values[0]):        
