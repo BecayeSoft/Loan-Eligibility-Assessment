@@ -1,5 +1,25 @@
 # Documentation
 
+## Setup
+
+**Install dependencies**
+
+```bash
+pip install -r requirements.txt
+```
+
+**Run the application**
+
+Navigate to the `src` directory and run the following command:
+
+```bash
+cd src
+streamlit run app.py
+```
+
+If you run the command outside the `src` directory, you will get an error because the app won't find the ".streamlit" folder.
+
+## Project Structure
 This repository is structured as follows:
 
 ```

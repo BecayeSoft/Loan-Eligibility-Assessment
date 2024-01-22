@@ -17,8 +17,8 @@ global preprocessor
 # Current directory
 current_dir = dirname(abspath(__file__))
 
-model_path = normpath(join(current_dir, "..", "..", "models", "model.pkl"))
-preprocessor_path = normpath(join(current_dir, "..", "..", "models", "preprocessor.pkl"))
+model_path = normpath(join(current_dir, "..", "streamlit-prod", "model.pkl"))
+preprocessor_path = normpath(join(current_dir, "..", "streamlit-prod", "preprocessor.pkl"))
 
 # ------- Load preprocessor and model------- #
 with open(model_path, 'rb') as f:

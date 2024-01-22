@@ -1,24 +1,16 @@
 import pandas as pd
-import numpy as np
 from joblib import load
 from sklearn import set_config
 from interpretation.utils import generate_shap_explanation 
-import os
 import openai
-from openai import OpenAI
-from dotenv import load_dotenv
+import streamlit as st
 from os.path import dirname, join, abspath, normpath
 
 # Set transformers output to Pandas DataFrame instead of NumPy array
 set_config(transform_output="pandas")
 
-
-# Current directory
-current_dir = dirname(abspath(__file__))
-credentials_path = normpath(join(current_dir, "..", "..", "credentials.env"))
-
-_ = load_dotenv(credentials_path)
-openai.api_key = os.environ['OPENAI_API_KEY']
+# Load the API key from streamlit secrets
+openai.api_key = st.secrets.OPENAI_API_KEY
 
 
 # ------- Variables ------- #
@@ -28,6 +20,7 @@ global system_prompt
 global query_template
 
 
+
 system_prompt = """
 The system evaluates loan applications using applicant data. 
 You need to explain the system's decision, considering features and their impacts, and this explanation is tailored for the non-technical applicant. 
@@ -35,42 +28,70 @@ No greetings or closings are necessary.
 Emphasize the features that had the most influence on the system's decision and how they affected that decision.
 When you mention a feature, include the feature's name and value.
 Use the term "system" to reference the model and avoid technical jargon related to the SHAP values.
+
+IMPORTANT
+---------
+Higher ApplicantIncome, CoapplicantIncome and LoanAmount are associated with a higher probability of approval. 
+Higher LoanAmount and Loan_Amount_Term are associated with a lower probability of approval.
+Loan Amount ranges from $9 to $700 (in thousands).
+Loan Amount Term ranges from 12 to 480 months.
 """
 
-# Features removed from the prompt:
-# - Married_Yes: 1 if the applicant is married, 0 otherwise
-# - Education_Not Graduate: 1 if the applicant is not a graduate, 0 otherwise
+response_template = """
+Your loan application has been approved. Several factors contributed to this decision.
+
+### What you did well:
+- **Income**: You have an income of \$3,235. This factor significantly boosts your chances of approval as a higher income increases the likelihood of getting the loan approved.
+- **Co-applicant's Income**: You have a co-applicant with an income of \$2. This factor significantly boosts your chances of approval, as a higher co-applicant income increases the likelihood of getting the loan approved.
+- **Requested Loan Amount:** Your loan request of \$77,000 falls within the lower range of our allowable amount, which spans from \$9,000 to \$700,000. This contributed positively to the approval decision.
+- **Credit History:** You have a credit history, which is required for loan approval.
+- Etc.
+
+### What you need to work on:
+- **Loan Term Duration:** The chosen loan term of 360 months (30 years) exceeds the midpoint in our range of 12 to 480 months. Opting for a longer loan term slightly diminishes your chances of approval.
+- Etc.
+...
+"""
 
 query_template = """
 Below are the definitions of the features:
 - Dependents: Number of dependents of the applicant 
 - ApplicantIncome: Income of the applicant
 - CoapplicantIncome: Income of the co-applicant
-- LoanAmount: Loan amount in thousands
+- LoanAmount: Loan amount 
 - Loan_Amount_Term: Term of the loan in months
-- Gender_Male: 1 if the applicant is a male, 0 otherwise
-- Self_Employed_Yes: 1 if the applicant is self-employed, 0 otherwise
-- Property_Area_Rural: 1 if the property is in a rural area, 0 otherwise
-- Property_Area_Semiurban: 1 if the property is in a semiurban area, 0 otherwise
-- Property_Area_Urban: 1 if the property is in an urban area, 0 otherwise
-- Credit_History_1.0: 1 if the applicant has a credit history, 0 otherwise
+- Gender: then gender of the applicant
+- Self Employed: wheather the applicant is self-employed or not
+- Property Area:Rural: "Yes" if the property is in a rural area, "No" otherwise
+- PropertyArea: Semiurban: "Yes" if the property is in a semiurban area, "No" otherwise
+- Property_Area: Urban: "Yes" if the property is in an urban area, "No" otherwise
+- Has Credit History: "Yes" if the applicant has a credit history, "No" otherwise
 
 Below are the names, values, SHAP values, and effects for each prediction in a JSON format:
-{explanations_json}
+{explanation_jsons}
 
 Below is the prediction of the model:
 Predicted status: {predicted_status}
 Probability of approval: {predicted_proba}%
 
-Based on the information on feature names, values, SHAP values, and effects, generate a report to explain the model's decision.
+-----
+Based on the information on feature names, values, SHAP values, and effects, 
+generate a report to explain the model's decision in simple terms.
+Below is an example of response so that you can get the pattern.
+Rewrite it to fit the current context based on the information above:
+The bulleted list should be ordered by impact magnitude.
+{response_template}
+
+Conclude with a summary of the most important factors and their effects on the decision.
+
+Recommend actions to improve the chances of approval.
 """
 
 
 # Get the paths
 current_dir = dirname(abspath(__file__))
-
-model_path = normpath(join(current_dir, "..", "..", "models", "model.pkl"))
-preprocessor_path = normpath(join(current_dir, "..", "..", "models", "preprocessor.pkl"))
+model_path = normpath(join(current_dir, "..", "streamlit-prod", "model.pkl"))
+preprocessor_path = normpath(join(current_dir, "..", "streamlit-prod", "preprocessor.pkl"))
 
 # ------- Load preprocessor and model------- #
 with open(model_path, 'rb') as f:
@@ -103,18 +124,20 @@ def generate_report(X_test, user_input):
     shap_explanation = generate_shap_explanation(X_test, user_input)
 
     # Convert the explanations to an array of structured JSON objects 
-    explanation_jsons = explanation_to_json(shap_explanation=shap_explanation,)
+    explanation_jsons = explanation_to_json(shap_explanation)
 
     # Predict the status of the loan application
     data = preprocessor.transform(user_input)
-    predicted_status = model.predict(data)[0]
     predicted_proba = model.predict_proba(data)[0][1] * 100
+    predicted_status = model.predict(data)[0]
+    predicted_status = "approved" if predicted_status == 1 else "rejected"
 
     # Create the query
     query = query_template.format(
-        explanations_json=explanation_jsons,
+        explanation_jsons=explanation_jsons,
         predicted_status=predicted_status,
-        predicted_proba=predicted_proba
+        predicted_proba=predicted_proba,
+        response_template=response_template
     )
 
     # Generate the response
@@ -126,7 +149,8 @@ def generate_report(X_test, user_input):
 		]
 	)
     response = completion.choices[0].message.content
-    # response = "This is a test response"
+    # # response = "This is a test response"
+    # response = query
 
     # Convert the JSON object to a DataFrame
     explanation_df = explanation_to_dataframe(explanation_jsons)
@@ -135,11 +159,12 @@ def generate_report(X_test, user_input):
     # The report consists of the dataframe as a Markdown table
     # and the response from GPT-3
     report = f"""
-## Applicant Information
+### Summary
 
 {explanation_df.to_markdown()}
 
-## Model Decision
+---
+## Explanation
 
 {response}
 """
@@ -170,16 +195,17 @@ def explanation_to_json(shap_explanation):
     explanation_jsons = []
     feature_names = [
         'Dependents', 'Applicant Income', 'Coapplicant Income', 'Loan Amount',
-        'Loan Amount Term', 'Gender', 
+        'Loan Term', 'Gender', 
         # 'Married', 'Education', 
         'Self Employed', 'Property Area: Rural',
         'Property Area: Semiurban', 'Property Area: Urban', 'Has Credit History'
     ]
     
-    for name, value, shap_value in zip(feature_names, shap_explanation.data.iloc[0].values, shap_explanation.values[0]):        
+    for name, value, shap_value in zip(feature_names, 
+        shap_explanation.data.iloc[0].values, shap_explanation.values[0]):        
         explanation_json = {}
 
-        # Map the values to strings for interpretability
+        # > Map the values to strings for interpretability
         if name == "Gender":
             value = "Male" if value == 1 else "Female"
         elif name == "Married":
@@ -188,19 +214,40 @@ def explanation_to_json(shap_explanation):
             value = "Not Graduate" if value == 1 else "Graduate"
         elif name == "Self Employed":
             value = "Yes" if value == 1 else "No"
+
+        # > Map "Property Area" to it's original category
+        # keep only the value that is equal to 1 
+        # since the property area is one-hot encoded
         elif name == "Property Area: Rural":
-            value = "Yes" if value == 1 else "No"
+            if value == 1:
+                name = "Property Area"
+                value = "Rural"
+            else:
+                continue
         elif name == "Property Area: Semiurban":
-            value = "Yes" if value == 1 else "No"
+            if value == 1:
+                name = "Property Area"
+                value = "Semi-urban"
+            else:
+                continue
         elif name == "Property Area: Urban":
-            value = "Yes" if value == 1 else "No"
+            if value == 1:
+                name = "Property Area"
+                value = "Urban"
+            else:
+                continue
         elif name == "Has Credit History":
             value = "Yes" if value == 1 else "No"
+
+        # > Map the "Loan Amount" values to thousands
+        # since the original data is in thousands
+        elif name == "Loan Amount":
+            value = value * 1000
 
         explanation_json["Name"] = name
         
         # Round numerical features value
-        if name in ['Applicant Income', 'Coapplicant Income', 'Loan Amount', 'Loan Amount Term']:
+        if name in ['Applicant Income', 'Coapplicant Income', 'Loan Amount', 'Loan Term']:
             explanation_json["Value"] = round(value)
         else:
             explanation_json["Value"] = value
@@ -230,6 +277,7 @@ def explanation_to_dataframe(explanation_jsons):
     explanation_df["SHAP Value (Abs)"] = explanation_df["SHAP Value"].abs()
     explanation_df.sort_values(by="SHAP Value (Abs)", ascending=False, inplace=True)
     explanation_df.drop("SHAP Value (Abs)", axis=1, inplace=True)
+    explanation_df.reset_index(drop=True, inplace=True)
 
     # Rename SHAP value to Impact Score to make it more intuitive
     explanation_df.rename(columns={"SHAP Value": "Impact Score"}, inplace=True)
