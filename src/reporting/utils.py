@@ -5,6 +5,7 @@ from interpretation.utils import generate_shap_explanation
 import openai
 import streamlit as st
 from os.path import dirname, join, abspath, normpath
+import re
 
 # Set transformers output to Pandas DataFrame instead of NumPy array
 set_config(transform_output="pandas")
@@ -40,17 +41,18 @@ Loan Amount Term ranges from 12 to 480 months.
 response_template = """
 Your loan application has been approved. Several factors contributed to this decision.
 
-### What you did well:
-- **Income**: You have an income of \$3,235. This factor significantly boosts your chances of approval as a higher income increases the likelihood of getting the loan approved.
-- **Co-applicant's Income**: You have a co-applicant with an income of \$2. This factor significantly boosts your chances of approval, as a higher co-applicant income increases the likelihood of getting the loan approved.
+### What you did well
+- **Income**: You have an income of \$4,235. This factor significantly boosts your chances of approval as a higher income increases the likelihood of getting the loan approved.
+- **Co-applicant's Income**: You have a co-applicant with an income of \$3000. This factor significantly boosts your chances of approval, as a higher co-applicant income increases the likelihood of getting the loan approved.
 - **Requested Loan Amount:** Your loan request of \$77,000 falls within the lower range of our allowable amount, which spans from \$9,000 to \$700,000. This contributed positively to the approval decision.
 - **Credit History:** You have a credit history, which is required for loan approval.
-- Etc.
 
-### What you need to work on:
+### What you need to work on
 - **Loan Term Duration:** The chosen loan term of 360 months (30 years) exceeds the midpoint in our range of 12 to 480 months. Opting for a longer loan term slightly diminishes your chances of approval.
-- Etc.
-...
+
+IMPORTANT:
+- Do not mention the gender as it is not a factor to improve or work on.
+- Do not recommend improve the applican't or co-applicant's income as it is not something that can be improved.
 """
 
 query_template = """
@@ -77,9 +79,10 @@ Probability of approval: {predicted_proba}%
 -----
 Based on the information on feature names, values, SHAP values, and effects, 
 generate a report to explain the model's decision in simple terms.
-Below is an example of response so that you can get the pattern.
-Rewrite it to fit the current context based on the information above:
-The bulleted list should be ordered by impact magnitude.
+Below is an example of response so that you can get the pattern,
+rewrite it to fit the current context based on the information above
+but Keep the same markdown structure (e.g. for the level 3 titles ###).
+The bulleted list should be ordered by magnitude of impact.
 {response_template}
 
 Conclude with a summary of the most important factors and their effects on the decision.
@@ -119,20 +122,20 @@ def generate_report(X_test, user_input):
     user_input: DataFrame
         User input
     """
-    # Get the SHAP explanation (values and data)
+    # > Get the SHAP explanation (values and data)
     X_test = preprocessor.transform(X_test)
     shap_explanation = generate_shap_explanation(X_test, user_input)
 
-    # Convert the explanations to an array of structured JSON objects 
+    # > Convert the explanations to an array of structured JSON objects 
     explanation_jsons = explanation_to_json(shap_explanation)
 
-    # Predict the status of the loan application
+    # > Predict the status of the loan application
     data = preprocessor.transform(user_input)
     predicted_proba = model.predict_proba(data)[0][1] * 100
     predicted_status = model.predict(data)[0]
     predicted_status = "approved" if predicted_status == 1 else "rejected"
 
-    # Create the query
+    # > Create the query
     query = query_template.format(
         explanation_jsons=explanation_jsons,
         predicted_status=predicted_status,
@@ -140,7 +143,7 @@ def generate_report(X_test, user_input):
         response_template=response_template
     )
 
-    # Generate the response
+    # > Generate the response
     completion = openai.chat.completions.create(
 		model="gpt-3.5-turbo",
 		messages=[
@@ -149,6 +152,8 @@ def generate_report(X_test, user_input):
 		]
 	)
     response = completion.choices[0].message.content
+    # Escape the dollar sign
+    response = escape_dollar_sign(response)
     # # response = "This is a test response"
     # response = query
 
@@ -284,3 +289,15 @@ def explanation_to_dataframe(explanation_jsons):
 
     return explanation_df
 
+
+def escape_dollar_sign(string):
+    """
+    Escape dollar signs in a string if they are not already escaped.
+    """
+    def replace_unescaped(match):
+        # Replace unescaped dollar signs with their escaped form
+        return match.group().replace('$', r'\$')
+
+    # Use a regular expression to find unescaped dollar signs
+    pattern = re.compile(r'(?<!\\)\$')
+    return pattern.sub(replace_unescaped, string)
